@@ -177,5 +177,9 @@ The `simple` search feature allows API consumers to search supplychains by keywo
 	    ],
 	    "cache_hit":true}
 
+### Creating and updating supplychains
+
+After authenticating with an API Key, you can `post` a supplychain json description to the supplychains service. Similarly you can update an existing supplychain by `put`-ing a json file describing the supplychain to the id of the supplychain you wish to update. The sample php client has examples
+
 [2]: www.sourcemap.com
 [2]: mailto:api@sourcemap.com
