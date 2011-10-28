@@ -1,5 +1,5 @@
 <?php require('lib/src-client.php'); include('lib/extra/class.krumo.php');?>
-<?php $src = new SrcClient(); ?>
+<?php $src = new SrcClient('apikey', 'apisecret'); ?>
 
 <!doctype html>  
 <html lang="en" class="no-js">
@@ -45,20 +45,44 @@
 	
 	<h3>Create a Supplychain</h3>
 	<blockquote>
-		<code>$data = '{"supplychain":{"attributes":{"title": "API Test"}, "stops":[{"local_stop_id":1,"id":1,"geometry": "POINT(-9349165.430522 4044184.943345)", "attributes":{ "title":"Facility #1"}}], "hops":[]}}'</code><br/><br/>
+		<code><pre style="width:100%; overflow:auto;">
+$data = 
+	'{ "supplychain":{ "attributes":{"title": "API Test"}, 
+		   "stops":[
+			   {"local_stop_id":1,"id":1,"geometry":"POINT(-7910337.7674084 5214822.776215)","attributes":{"title":"Facility #1", "address":"Boston, MA, USA"}},
+			   {"local_stop_id":2,"id":2,"geometry":"POINT(-8238307.2400059 4970299.6279391)","attributes":{"title":"Facility #2", "address":"New York, NY, USA"}}
+		   ],
+		   "hops":[
+			   {"from_stop_id":2,"to_stop_id":1,"geometry":"MULTILINESTRING((-8238307.2400059 4970299.6279391,-7910337.7674084 5214822.776215))","attributes":{"title":"Facility #2 to Facility #1"}}
+		   ] }
+	}';
+		</pre></code><br/><br/>
 			
 		<code>$src->create_supplychain($data);</code>
-		<?php $data = '{ "supplychain":{ "attributes":{"title": "API Test"}, "stops":[ { "local_stop_id":1,"id":1,"geometry": "POINT(-9349165.430522 4044184.943345)", "attributes":{ "title":"Facility #1" } } ], "hops":[] } }'; ?>
-		<?php krumo($src->create_supplychain($data)); ?>
+		<?php $data = '{ "supplychain":{ "attributes":{"title": "API Test"}, "stops":[{"local_stop_id":1,"id":1,"geometry":"POINT(-7910337.7674084 5214822.776215)","attributes":{"title":"Facility #1", "address":"Boston, MA, USA"}}, {"local_stop_id":2,"id":2,"geometry":"POINT(-8238307.2400059 4970299.6279391)","attributes":{"title":"Facility #2", "address":"New York, NY, USA"}}],"hops":[{"from_stop_id":2,"to_stop_id":1,"geometry":"MULTILINESTRING((-8238307.2400059 4970299.6279391,-7910337.7674084 5214822.776215))","attributes":{"title":"Facility #2 to Facility #1"}}] }}'; ?>
+		<?php $resp = $src->create_supplychain($data); ?>
+		<?php krumo($resp); ?>
+		<?php 
+			if($resp->error) { 
+				$created_id = "482"; 
+			} else { 
+				$segments = explode("/", $resp->created); 
+				$created_id = $segments[2]; 
+			}
+		?>
+		<iframe width="640px" height="480px" frameborder="0" src="<?php echo $src::VIEW_ENDPOINT.$created_id;?>"></iframe>
+		
 	</blockquote>
 	
 	<h3>Update a Supplychain</h3>
 	<blockquote>
-		<code>$id = 795; $supplychain_json_file = 'sample.json';<code><br/><br/>
+		<code>$id = 482; $supplychain_json_file = 'sample.json';<code><br/><br/>
 			
 		<code>$src->update_supplychain($supplychain_json_file, $id);</code>
-		<?php $id = 795; $supplychain_json_file = "sample.json"; ?>
-		<?php krumo($src->update_supplychain($supplychain_json_file, $id)); ?>
+		<?php $id = 482; $supplychain_json_file = "sample.json"; ?>
+		<?php //$resp = $src->update_supplychain($supplychain_json_file, $id); ?>
+		<?php //krumo($resp); ?>
+		<iframe width="640px" height="480px" frameborder="0" src="<?php echo $src::VIEW_ENDPOINT.$id;?>"></iframe>
 	</blockquote>
 </body>
 </html>

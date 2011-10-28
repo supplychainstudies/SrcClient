@@ -21,6 +21,8 @@
 class SrcClient {
 	
 	const API_ENDPOINT = 'http://www.sourcemap.com/services/';
+	const VIEW_ENDPOINT = 'http://www.sourcemap.com/embed/';
+	
 	const API_VERSION = '1.0';
 	
 	public $apikey;
@@ -42,10 +44,10 @@ class SrcClient {
 		return json_decode($this->_get(array('supplychains',$id)));
 	}	
 	public function create_supplychain($data) {
-		return $this->_post('supplychains', $data);
+		return json_decode($this->_post('supplychains', $data));
 	}
 	public function update_supplychain($infile, $id) {
-		return $this->_put(array('supplychains',$id), $infile);
+		return json_decode($this->_put(array('supplychains',$id), $infile));
 	}
 	public function get_supplychains() {
 		$args = func_get_args();
