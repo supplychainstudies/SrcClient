@@ -42,6 +42,7 @@ For information on supply chain properties, see [http://github.com/SourcemapFoun
 
 The supplychains service provides an endpoint for fetching lists of public supplychains. You can set the limit and offset values using the query string parameters `l` and `o`, respectively. You can use the f parameter to specify the formatting for the return object. The default value is json, but if you needed to access the api in javascript, for example, you could request jsonp. Other format include csv, geojson, kml, or php.
 [http://sourcemap.com/services/supplychains/?l=10&o=25](http://sourcemap.com/services/supplychains/?l=10&o=25)
+
 	curl -is 'http://sourcemap.com/services/supplychains/?l=10&o=25'
 
 	{
@@ -66,7 +67,9 @@ The `supplychains` endpoint isn't a good method for finding supplychains based o
 
 Individual supplychains may be accessed using paths of the form `services/supplychains/[id]` where `[id]` is a supplychain ID.
 
-	curl -is '[http://sourcemap.com/services/supplychains/219](http://sourcemap.com/services/supplychains/219)'
+[http://sourcemap.com/services/supplychains/219](http://sourcemap.com/services/supplychains/219)
+	
+	curl -is 'http://sourcemap.com/services/supplychains/219'
  
 Would return the following:
 
