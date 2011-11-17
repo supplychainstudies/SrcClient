@@ -191,6 +191,7 @@ The `simple` search feature allows API consumers to search supplychains by keywo
 Supply chains expect to be given Well Known Text formatted points (for stops) and multiline strings (for hops). These are not latitude and longitude coordinates, but EPSG:900913 coordinates. We provide a goecoding service that will be helpful in converting to this projection. For example:
 
 [http://www.sourcemap.com/services/geocode/?ll=-71.1097,42.3726](http://www.sourcemap.com/services/geocode/?ll=-71.1097,42.3726)
+
 	curl -is 'http://www.sourcemap.com/services/geocode/?ll=-71.1097,42.3726'
 	
 Where ll is the longitude,latitude of the point.
