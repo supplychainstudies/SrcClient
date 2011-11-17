@@ -1,6 +1,8 @@
-# SrcClient
+This repository provides documentation related to the [Sourcemap.com](http://www.sourcemap.com) API. For additional support, you should contact the [Sourcemap.com support team](mailto:api@sourcemap.com).
 
-This repo provides some sample clients that may be helpful in connecting to the [sourcemap.com][1] API. Right now there is a client for working with supplychains as native PHPoObjects and a client for accessing the API in javascript with jsonp.
+## SrcClient
+
+This repo provides some sample clients that may be helpful in connecting to the [sourcemap.com](http://www.sourcemap.com) API. Right now there is a read/write client for working with supplychains as native PHPoObjects and a client for accessing the read API in javascript with jsonp.
 
 ## Sourcemap.com API
 
@@ -9,7 +11,7 @@ POST`, and `DELETE`.
 
 A very minimalistic "discovery" service exists at the base services url `/services/`.
 
-	curl -is http://sourcemap.com/services/ 
+	curl -is [http://sourcemap.com/services/](http://sourcemap.com/services/) 
 
 The above command will yield JSON (other serialization formats are available) like the following. 
 
@@ -22,7 +24,7 @@ The above command will yield JSON (other serialization formats are available) li
 
 ### Authentication
 
-Authentication for the Sourcemap API centers around tokens generated using an API key-secret pair. The key is generated randomly and assigned upon [request][2]. Since we don't currently support any kind of three-party authentication, you can only use the API to get public data or private data that belongs to you using key-secret authentication. 
+Authentication for the Sourcemap API centers around tokens generated using an API key-secret pair. The key is generated randomly and assigned upon [request](mailto:api@sourcemap.com). Since we don't currently support any kind of three-party authentication, you can only use the API to get public data or private data that belongs to you using key-secret authentication. 
 
 To use your API key, you must construct a few special HTTP headers for every request you'd like to authenticate. Every authenticated API request requires the `Date` header. The date is expected to be in RFC2822 format. This date should matche the date and time on the Sourcemap servers to within 30 seconds. The API key should be included in the special HTTP header `X-Sourcemap-API-Key`. 
 
@@ -32,11 +34,13 @@ The final header required for authentication with the Sourcemap API is the ` X-S
  
 ### Supplychains
 
+For information on supply chain properties, see [http://github.com/SourcemapFoundation/SrcClient/blob/master/properties.md](htts://github.com/SourcemapFoundation/SrcClient/blob/master/properties.md)
+
 #### Fetching Supplychains
 
-The supplychains service provides an endpoint for fetching lists of public supplychains. You can set the limit and offset values using the query string parameters `l` and `o`, respectively. 
+The supplychains service provides an endpoint for fetching lists of public supplychains. You can set the limit and offset values using the query string parameters `l` and `o`, respectively. You can use the f parameter to specify the formatting for the return object. The default value is json, but if you needed to access the api in javascript, for example, you could request jsonp. Other format include csv, geojson, kml, or php.
 
-	curl -is 'http://sourcemap.com/services/supplychains/?l=10&o=25'
+	curl -is '[http://sourcemap.com/services/supplychains/?l=10&o=25](http://sourcemap.com/services/supplychains/?l=10&o=25)'
 
 	{
 	    "supplychains":[
@@ -60,7 +64,7 @@ The `supplychains` endpoint isn't a good method for finding supplychains based o
 
 Individual supplychains may be accessed using paths of the form `services/supplychains/[id]` where `[id]` is a supplychain ID.
 
-	curl -is 'http://sourcemap.com/services/supplychains/12345'
+	curl -is '[http://sourcemap.com/services/supplychains/219](http://sourcemap.com/services/supplychains/219)'
  
 Would return the following:
 
@@ -177,9 +181,14 @@ The `simple` search feature allows API consumers to search supplychains by keywo
 	    ],
 	    "cache_hit":true}
 
+### Projection Conversion
+
+Supply chains expect to be given Well Known Text formatted points (for stops) and multiline strings (for hops). These are not latitude and longitude coordinates, but EPSG:900913 coordinates. We provide a goecoding service that will be helpful in converting to this projection. For example:
+
+	[http://www.sourcemap.com/services/geocode/?ll=-71.1097,42.3726](http://www.sourcemap.com/services/geocode/?ll=-71.1097,42.3726)
+	
+Where ll is the longitude,latitude of the point.
+
 ### Creating and updating supplychains
 
-After authenticating with an API Key, you can `post` a supplychain json description to the supplychains service. Similarly you can update an existing supplychain by `put`-ing a json file describing the supplychain to the id of the supplychain you wish to update. The sample php client has examples
-
-[2]: www.sourcemap.com
-[2]: mailto:api@sourcemap.com
+After authenticating with an API Key, you can `post` a supplychain json description to the supplychains service. Similarly you can update an existing supplychain by `put`-ing a json file describing the supplychain to the id of the supplychain you wish to update. If you have a Sourcemap.com API key and would like to try using the write api, the best starting place is in the SrcClient php library. `example.php` contains detailed examples of creating, updating, and viewing created supply chains.
