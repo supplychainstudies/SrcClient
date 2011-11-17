@@ -11,7 +11,9 @@ POST`, and `DELETE`.
 
 A very minimalistic "discovery" service exists at the base services url `/services/`.
 
-	curl -is [http://sourcemap.com/services/](http://sourcemap.com/services/) 
+[http://sourcemap.com/services/](http://sourcemap.com/services/)
+
+	curl -is http://sourcemap.com/services/ 
 
 The above command will yield JSON (other serialization formats are available) like the following. 
 
@@ -39,8 +41,8 @@ For information on supply chain properties, see [http://github.com/SourcemapFoun
 #### Fetching Supplychains
 
 The supplychains service provides an endpoint for fetching lists of public supplychains. You can set the limit and offset values using the query string parameters `l` and `o`, respectively. You can use the f parameter to specify the formatting for the return object. The default value is json, but if you needed to access the api in javascript, for example, you could request jsonp. Other format include csv, geojson, kml, or php.
-
-	curl -is '[http://sourcemap.com/services/supplychains/?l=10&o=25](http://sourcemap.com/services/supplychains/?l=10&o=25)'
+[http://sourcemap.com/services/supplychains/?l=10&o=25](http://sourcemap.com/services/supplychains/?l=10&o=25)
+	curl -is 'http://sourcemap.com/services/supplychains/?l=10&o=25'
 
 	{
 	    "supplychains":[
@@ -185,7 +187,8 @@ The `simple` search feature allows API consumers to search supplychains by keywo
 
 Supply chains expect to be given Well Known Text formatted points (for stops) and multiline strings (for hops). These are not latitude and longitude coordinates, but EPSG:900913 coordinates. We provide a goecoding service that will be helpful in converting to this projection. For example:
 
-	[http://www.sourcemap.com/services/geocode/?ll=-71.1097,42.3726](http://www.sourcemap.com/services/geocode/?ll=-71.1097,42.3726)
+[http://www.sourcemap.com/services/geocode/?ll=-71.1097,42.3726](http://www.sourcemap.com/services/geocode/?ll=-71.1097,42.3726)
+	curl -is 'http://www.sourcemap.com/services/geocode/?ll=-71.1097,42.3726'
 	
 Where ll is the longitude,latitude of the point.
 
