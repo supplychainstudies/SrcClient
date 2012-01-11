@@ -76,7 +76,8 @@ class SrcClient {
 		curl_setopt($ch, CURLOPT_POST, 1);
 		curl_setopt($ch, CURLOPT_POSTFIELDS, $data);
 	    curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
-	     return curl_exec($ch);
+	
+	    return curl_exec($ch);
 	}
 	private function _put($service, $infile) {		
 	    $ch = curl_init(self::API_ENDPOINT.join("/", $service));	
