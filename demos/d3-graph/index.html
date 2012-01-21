@@ -1,0 +1,182 @@
+<!DOCTYPE html>
+<html>
+<head>
+	<title>Sourcemap Clustered Network Example</title>
+	<script type="text/javascript" src="lib/d3.min.js"></script>
+	<script type="text/javascript" src="lib/d3.geom.min.js"></script>
+	<script type="text/javascript" src="lib/d3.layout.min.js"></script>
+	<script src="https://ajax.googleapis.com/ajax/libs/jquery/1.7.1/jquery.min.js"></script>
+	<script type="text/javascript">
+		var serviceURL = "http://sourcemap.com/services/"; 
+	</script>
+	<style type="text/css">
+		body { font-family:Helvetica, sans-serif;}
+		#loadcontrol { width:950px; padding:5px; border:1px solid #ccc; background:#f5f5f5;}
+			
+		svg {
+			background:#fff;
+		}
+		circle.stop {
+			stroke: #fff;
+			stroke-width: 4.0px;
+		}
+		line.link {
+			stroke: #333;
+			stroke-opacity: 0.5;
+			pointer-events: none;
+		}
+		text.label { 
+			pointer-events: none; 
+			stroke: #fff;
+			stroke-width:0.2px;
+			fill: #ccc;
+			font: 16px sans-serif; 
+		}
+	</style>
+</head>
+<body>
+	<h1>D3 Graph Demo</h1>
+	<div id="loadcontrol" style="">	
+		Browse Recent Maps <select id="chooser"></select>
+	<div>
+	
+	<script type="text/javascript">
+		$(document).ready(function() {
+			
+			d3.json(serviceURL+"search?recent=yes", function(json) {
+				for(var i=0; i<json.results.length; i++) {
+					var selected = i==0 ? 'selected="selected" ' : '';
+					$("#chooser").append('<option '+selected+' value="'+json.results[i].id+'">'+json.results[i].attributes.title+'</option>');
+				}
+				$("#chooser").change(function() {
+					renderGraph($("#chooser option:selected").val());
+				});
+				$("#chooser").change();
+				
+			});
+
+			function renderGraph(id) {
+				d3.select("svg").remove();
+	
+				var w = 960,     
+				    h = 600;
+				var body = d3.select("body");
+	
+				var vis = body.append("svg")
+				   .attr("width", w)
+				   .attr("height", h);
+	
+				d3.json(serviceURL+"supplychains/"+id, function(json) {
+				  data = {};
+				  data.nodes = [];
+				  data.links = [];
+  
+				  var stopmax = 1;
+				  var hopmax = 1;
+				  var fill=d3.scale.category20();
+
+				  if(typeof(json.supplychain.stops) != 'undefined') {
+					  for(var i=0; i<json.supplychain.stops.length; ++i) {
+						  var s = json.supplychain.stops[i];
+						  if(typeof(s.attributes.co2e) != 'undefined') {
+							  if(Number(s.attributes.co2e) > stopmax) {
+								  stopmax = Number(s.attributes.co2e);
+							  }
+						  }		
+					  }
+
+					  for (var i=0; i<json.supplychain.stops.length; ++i) {
+						  var size = 10;
+						  if(typeof(json.supplychain.stops[i].attributes.co2e) != 'undefined') {
+							  size  = Math.max(10, 20 * json.supplychain.stops[i].attributes.co2e / stopmax);
+						  }
+							  var newNode = {
+								  "name": json.supplychain.stops[i].attributes.title, 
+								  "group":json.supplychain.stops[i].local_stop_id-1,
+								  "size":size				  
+							  }
+							  data.nodes[json.supplychain.stops[i].local_stop_id-1] = newNode;
+					  }
+				  }
+				  if(typeof(json.supplychain.hops) != 'undefined') {
+					  for(var i=0; i<json.supplychain.hops.length; ++i) {
+						  var s = json.supplychain.hops[i];
+						  if(typeof(s.attributes.co2e) != 'undefined') {
+							  if(Number(s.attributes.co2e) > hopmax) {
+								  hopmax = Number(s.attributes.co2e);
+							  }
+						  }		
+					  }
+	  
+					  for (var i=0; i<json.supplychain.hops.length; ++i) {
+						  var size = 4;
+						  if(typeof(json.supplychain.hops[i].attributes.co2e) != 'undefined') {
+							  size  = Math.max(4, 8 * json.supplychain.hops[i].attributes.co2e / hopmax);
+						  }
+		  
+						  var newLink = {
+											"source": json.supplychain.hops[i].from_stop_id-1, 
+											"target": json.supplychain.hops[i].to_stop_id-1,
+											"value": 1,
+											"size": size
+										};
+						  data.links.push(newLink);
+					  }
+				  }
+
+				  var force = self.force = d3.layout.force()
+				      .nodes(data.nodes)
+				      .links(data.links)
+				      .gravity(.05)
+				      .distance(100)
+				      .charge(-150)
+				      .size([w, h])
+				      .start();
+
+				  var link = vis.selectAll("line.link")
+				      .data(data.links)
+				      .enter().append("svg:line")
+				      .attr("class", "link")
+					  .attr("stroke-width", function(d) { return d.size; })
+				      .attr("x1", function(d) { return d.source.x; })
+				      .attr("y1", function(d) { return d.source.y; })
+				      .attr("x2", function(d) { return d.target.x; })
+				      .attr("y2", function(d) { return d.target.y; });
+
+				  var node = vis.selectAll("g.node")
+				      .data(data.nodes)
+				      .enter().append("svg:g")
+				      .attr("class", "node")
+				      .call(force.drag);
+
+
+				  node.append("svg:circle")
+				      .attr("class", "stop")
+					  .attr("r", function(d) { return d.size})
+				      .attr("x", "0")
+				      .attr("y", "0")
+				      .attr("fill",  function(d) { return fill(d.group)})
+	  
+				      .attr("width", "16px")
+				      .attr("height", "16px");
+
+				  node.append("svg:text")
+				      .attr("class", "label")
+				      .attr("dx", 12)
+				      .attr("dy", ".35em")
+				      .text(function(d) { return d.name });
+
+				  force.on("tick", function() {
+				  		link.attr("x1", function(d) { return d.source.x; })
+				        	.attr("y1", function(d) { return d.source.y; })
+				        	.attr("x2", function(d) { return d.target.x; })
+				        	.attr("y2", function(d) { return d.target.y; });
+				    	node.attr("transform", function(d) { return "translate(" + d.x + "," + d.y + ")"; });
+				  });
+			   });
+			}
+		});
+	</script>
+	</div>
+</body>
+</html>

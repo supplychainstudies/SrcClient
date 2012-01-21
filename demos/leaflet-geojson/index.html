@@ -1,0 +1,128 @@
+<!DOCTYPE html>
+<html>
+<head>
+	<title>Sourcemap Leaflet GeoJSON example</title>
+	
+	<link rel="stylesheet" href="dist/leaflet.css" />
+	<script src="https://ajax.googleapis.com/ajax/libs/jquery/1.7.1/jquery.min.js"></script>
+	<script src="dist/leaflet.js"></script>
+	<script src="dist/underscore-min.js"></script>	
+	<script src="dist/grate.js"></script>
+	<script type="text/javascript">
+		var serviceURL = "http://sourcemap.com/services/"; 
+	</script>
+	
+	<style type="text/css">
+		body { font-family:Helvetica, sans-serif;}
+		#loadcontrol { width:948px; padding:5px; border:1px solid #ccc; background:#f5f5f5;}
+	</style>
+</head>
+<body>
+	<h1>Leaflet Geojson Viewer</h1>
+	<div id="loadcontrol" style="">
+		http://www.sourcemap.com/services/supplychains/ <input type="text" id="smapid" style="width:30px;" value="822"/>
+		Linestyle:
+		<select id="linetype">
+			<option value="st">Straight</option>
+			<option value="bz" selected="selected">Bezier</option>
+			<option value="gc">Great Circle</option>			
+		</select>
+		<input type="button" id="maptrigger" value="Go"></input> 
+	</div>
+	<div id="map" style="width: 960px; height: 500px"></div>
+
+	<script>
+    	$(document).ready(function() {						
+			function addGeojson(id) {
+				$.getJSON(serviceURL+"supplychains/"+id+"?f=geojson", function(data) {		
+					var linetype = $("#linetype option:selected").val();
+					if(linetype != "st") {	 
+						for (var i = 0, len = data.features.length; i < len; i++) {
+							if(data.features[i].geometry.type == "LineString") {
+								var fromx = data.features[i].geometry.coordinates[0][0];
+								var fromy = data.features[i].geometry.coordinates[0][1];
+								var tox = data.features[i].geometry.coordinates[1][0];
+								var toy = data.features[i].geometry.coordinates[1][1];
+
+								data.features[i].geometry.type = "MultiLineString";
+								if(linetype == "gc") {
+									var multipass = Grate.great_circle_route([fromx, fromy], [tox, toy], 7, map.getPixelBounds());
+								
+								}
+								else {
+									var multipass = Grate.bezier_route([fromx, fromy], [tox, toy], 7, map.getPixelBounds());
+								
+								}
+								data.features[i].geometry.coordinates = multipass;
+							}
+						}
+					}
+					
+					var geojsonLayer = new L.GeoJSON(null, {});		
+					geojsonLayer.on("featureparse", function (e) {
+						var title = "Unnamed."
+						if(typeof(e.properties.title) != 'undefined') {
+							title = e.properties.title;
+						}
+						var description = ""
+						if(typeof(e.properties.description) != 'undefined') {
+							description = e.properties.description;
+						}
+					
+					    var popupContent = "<h2>"+title+"</h2><p>"+description+"</p>";
+					    if (e.properties && e.properties.popupContent) {
+					        popupContent += e.properties.popupContent;
+					    }
+					    e.layer.bindPopup(popupContent);
+					    if (e.properties && e.properties.style && e.layer.setStyle) {
+					        e.layer.setStyle(e.properties.style);
+					    }
+					});
+
+					map.addLayer(geojsonLayer);
+
+					
+					geojsonLayer.addGeoJSON(data);
+					geojsonLayer.setStyle({
+						"color": colors[Math.floor(Math.random()*20)],
+						"weight": 3,
+						"opacity": 0.4
+					});
+					
+					var maptitle = '';
+	
+					layersControl.addOverlay(geojsonLayer, data.properties.title);
+			  	});			
+		 	}	
+			
+			var map = new L.Map('map');
+			var colors = ["#1f77b4", "#aec7e8", "#ff7f0e", "#ffbb78", "#2ca02c", "#98df8a", "#d62728", "#ff9896", "#9467bd", "#c5b0d5", "#8c564b", "#c49c94", "#e377c2", "#f7b6d2", "#7f7f7f", "#c7c7c7", "#bcbd22", "#dbdb8d", "#17becf", "#9edae5"];
+			var cloudmadeUrl = 'http://{s}.tile.cloudmade.com/BC9A493B41014CAABB98F0471D759707/22677/256/{z}/{x}/{y}.png';
+			var cloudmadeAttribution = 'Base data &copy; OSM contributors, Imagery &copy; CloudMade';
+			var cloudmade = new L.TileLayer(cloudmadeUrl, {maxZoom: 18, attribution: cloudmadeAttribution});
+			
+			var bluemarbleUrl = 'http://{s}.tiles.mapbox.com/v3/mapbox.blue-marble-topo-bathy-jul-bw/{z}/{x}/{y}.png';
+			var bluemarbleAttribution = 'NASA Blue Marble Topography from MapBox';
+			var bluemarble = new L.TileLayer(bluemarbleUrl, {maxZoom: 8, attribution: bluemarbleAttribution});
+			
+			
+			
+			map.setView(new L.LatLng(0, 0), 2).addLayer(bluemarble).addLayer(cloudmade);
+			var baseMaps = {
+				"Cloudmade": cloudmade,
+				"Bluemarble": bluemarble				
+			};
+			var layersControl = new L.Control.Layers(baseMaps, null);        
+			map.addControl(layersControl);
+			
+		 	$("#maptrigger").click(function() {
+			 	addGeojson($("#smapid").val());
+			});
+			
+			map.attributionControl.setPrefix('<a href="http://www.sourcemap.com">Powered by Sourcemap</a> (Using Leaflet)');
+			map.setView(new L.LatLng(0, 0), 2).locate({setView: true, maxZoom: 2});
+			addGeojson($("#smapid").val());
+      	});
+	</script>
+</body>
+</html>

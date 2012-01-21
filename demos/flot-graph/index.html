@@ -1,0 +1,135 @@
+<!DOCTYPE html>
+<html>
+<head>
+	<title>Sourcemap Flot Graph Example</title>
+					
+	<script src="https://ajax.googleapis.com/ajax/libs/jquery/1.7.1/jquery.min.js"></script>
+    <script language="javascript" type="text/javascript" src="lib/jquery.flot.min.js"></script>
+    <script language="javascript" type="text/javascript" src="lib/jquery.flot.stack.min.js"></script>
+	<script type="text/javascript">
+		var serviceURL = "http://sourcemap.com/services/"; 
+	</script>
+	
+	<style type="text/css">
+		body { font-family:Helvetica, sans-serif;}
+		#loadcontrol { width:950px; padding:5px; margin-bottom:10px; border:1px solid #ccc; background:#f5f5f5;}
+		#holder {
+			border:top:1px solid #ccc;
+			padding:20px;
+		}
+		.tickLabel, .legendLabel {
+			color:#aaa;
+		}
+	</style>
+</head>
+<body>
+	<h1>Flot Emissions Graph Demo</h1>
+	<div id="loadcontrol">	
+		Browse Recent Maps <select id="chooser"></select>
+	</div>
+	
+	<script type="text/javascript">
+		$(document).ready(function() {
+			var chainlist = [];
+			var attributeslist = [];
+			$.getJSON(serviceURL+"search?recent=yes", function(json) {
+				for(var i=0; i<json.results.length; i++) {
+					var selected = i==0 ? 'selected="selected" ' : '';
+					$("#chooser").append('<option '+selected+' value="'+json.results[i].id+'">'+json.results[i].attributes.title+'</option>');
+				}
+				$("#chooser").change(function() {
+					renderChart($("#chooser option:selected").val());
+				});
+				//$("#chooser").change();
+				renderChart(824);
+				
+			});
+
+			function renderChart(id) {
+	
+				$.getJSON(serviceURL+"supplychains/"+id, function(json) {
+				  	$("svg").remove();
+					if(typeof(json.supplychain.stops) != 'undefined') {		
+					  var chain = [], attr = [];				
+					  for(var i=0; i<json.supplychain.stops.length; ++i) {
+						  var s = json.supplychain.stops[i];
+						  if(typeof(s.attributes.co2e) != 'undefined') {
+							  chain.push([i, Number(s.attributes.co2e)]);
+						  }		
+						  else {
+							  chain.push([i, 0]);
+						  }					
+						  attr.push(s.attributes.title);			  
+					  }
+					  chainlist.push({
+						  "label":json.supplychain.attributes.title, 
+						  "hoverable": true,
+						  "shadowSize": 2,
+						  "data":chain
+					  });
+					  attributeslist.push(attr);
+					}    
+					
+			        $.plot($("#holder"), chainlist, {
+					  	xaxis: {show:false},
+						yaxis: {
+							color: "#fff"
+						},						
+			            series: {
+			                bars: { show: true, barWidth: 0.6, fill:1 }
+			            },
+						colors: ["#1f77b4", "#aec7e8", "#ff7f0e", "#ffbb78", "#2ca02c", "#98df8a", "#d62728", "#ff9896", "#9467bd", "#c5b0d5", "#8c564b", "#c49c94", "#e377c2", "#f7b6d2", "#7f7f7f", "#c7c7c7", "#bcbd22", "#dbdb8d", "#17becf", "#9edae5"],
+						grid: {						
+						    color: "#fff",
+						    backgroundColor: "#fff",
+							labelMargin:10,
+							borderWidth:2,
+							borderColor:"#fff",							
+							hoverable: true, clickable: true
+						  }
+			        });					
+				});
+			}
+			function showTooltip(x, y, contents) {
+		        $('<div id="tooltip">' + contents + '</div>').css( {
+		            position: 'absolute',
+		            display: 'none',
+					borderRadius: '4px',
+		            top: y + 5,
+		            left: x + 5,
+		            border: '1px solid #fdfdfd',
+		            padding: '2px',
+		            'background-color': '#f5f5f5',
+		            opacity: 0.80
+		        }).appendTo("body").fadeIn(200);
+			}
+			$("#holder").bind("plothover", function (event, pos, item) {
+			        $("#x").text(pos.x.toFixed(2));
+			        $("#y").text(pos.y.toFixed(2));
+
+		            if (item) {
+		                if (previousPoint != item.dataIndex) {
+		                    previousPoint = item.dataIndex;
+                    
+		                    $("#tooltip").remove();
+		                    var x = item.datapoint[0].toFixed(2),
+		                        y = item.datapoint[1].toFixed(2);
+								var text = attributeslist[item.seriesIndex][item.dataIndex];
+		                    showTooltip(item.pageX, item.pageY, text);
+		                }
+		            }
+		            else {
+		                $("#tooltip").remove();
+		                previousPoint = null;            
+		            }
+			});
+		});
+	</script>
+		
+	</div>
+	<div id="holder" style="width:960px; height:400px;"></div>
+</body>
+</html>
+
+
+	
